@@ -1,0 +1,1694 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>연식 조회 — TO-BE 목업</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg-dim: rgba(0, 0, 0, 0.55);
+    --line: #e5e7eb;
+    --text-strong: #111827;
+    --text-base: #1f2937;
+    --text-mute: #6b7280;
+    --label: #9ca3af;
+    --accent: #111827;
+    --brand: #FFB800;
+    --brand-strong: #f59e0b;
+    --price: #ef4444;
+    --notice-bg: #f3f4f6;
+    --notice-text: #6b7280;
+    --card-bg: #f3f4f6;
+    --btn-bg: #111827;
+    --btn-text: #ffffff;
+    --btn-ghost-bg: #ffffff;
+    --btn-ghost-border: #d1d5db;
+    --btn-ghost-text: #374151;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #f5f5f5;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 16px;
+    color: var(--text-base);
+  }
+  .page-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-strong);
+    margin: 0 0 2px;
+  }
+  .page-sub {
+    font-size: 12px;
+    color: var(--text-mute);
+    margin: 0 0 12px;
+    text-align: center;
+    line-height: 1.45;
+  }
+
+  /* 토글 그룹 (디바이스 / 시나리오) */
+  .toggle-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .toggle-row button {
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: #ffffff;
+    color: var(--text-mute);
+    cursor: pointer;
+    transition: all .15s ease;
+  }
+  .toggle-row button.active {
+    background: var(--accent);
+    color: #ffffff;
+    border-color: var(--accent);
+  }
+  .toggle-row .group-label {
+    font-size: 11.5px;
+    color: var(--text-mute);
+    align-self: center;
+    margin-right: 2px;
+  }
+
+  /* 스텝 인디케이터 */
+  .stepper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 4px 0 12px;
+    font-size: 12px;
+    color: var(--text-mute);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .step-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    background: #ffffff;
+    border: 1px solid var(--line);
+    cursor: pointer;
+  }
+  .step-chip.active {
+    background: var(--accent);
+    color: #ffffff;
+    border-color: var(--accent);
+    font-weight: 500;
+  }
+  .step-arrow { color: #c4c4c4; }
+
+  /* ===== Desktop Stage (홈) ===== */
+  .stage-desktop {
+    position: relative;
+    width: 100%;
+    max-width: 660px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 32px 36px;
+    min-height: 520px;
+    flex-direction: column;
+  }
+  .screen { display: none; width: 100%; }
+  .screen.active { display: block; }
+  .dh-headline {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.45;
+    margin-bottom: 18px;
+  }
+  .dh-search-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .dh-search-row input {
+    flex: 1;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    padding: 11px 14px;
+    font-size: 16px;
+    font-family: inherit;
+    color: #111827;
+    outline: 0;
+  }
+  .dh-search-row input::placeholder { color: #d1d5db; }
+  .dh-search-row .dh-search-btn {
+    background: #111827;
+    color: #ffffff;
+    border: 0;
+    padding: 0 24px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .dh-links {
+    display: flex;
+    justify-content: flex-end;
+    gap: 18px;
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+  .dh-links a {
+    color: var(--brand-strong);
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .dh-footnotes {
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.65;
+    border-top: 1px solid #f3f4f6;
+    padding-top: 14px;
+  }
+  .dh-modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    border-radius: 8px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+  }
+  .dh-modal-overlay.active { display: flex; }
+
+  .modal {
+    width: 100%;
+    max-width: 380px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 22px 22px 18px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+    animation: pop .2s ease-out;
+  }
+  @keyframes pop {
+    from { transform: translateY(8px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+  }
+  .modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .modal-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-strong);
+  }
+  .modal-close {
+    width: 24px;
+    height: 24px;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    color: var(--text-mute);
+    font-size: 18px;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .car-name-card {
+    background: var(--card-bg);
+    border-radius: 8px;
+    padding: 22px 16px;
+    text-align: center;
+    margin-bottom: 18px;
+  }
+  .car-name-label {
+    font-size: 12px;
+    color: var(--text-mute);
+    margin-bottom: 8px;
+  }
+  .car-name-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-strong);
+    word-break: keep-all;
+  }
+  .balance-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .balance-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+  }
+  .balance-label { color: var(--text-mute); }
+  .balance-value { color: var(--text-base); font-weight: 500; }
+  .confirm-divider {
+    height: 1px;
+    background: var(--line);
+    margin: 0 0 14px;
+  }
+  .confirm-message {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-base);
+    line-height: 1.6;
+    margin-bottom: 18px;
+  }
+  .confirm-message .price { color: var(--price); font-weight: 700; }
+
+  .car-headline {
+    font-size: 13px;
+    color: var(--text-mute);
+    margin-bottom: 2px;
+  }
+  .car-submodel {
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--text-strong);
+    margin-bottom: 16px;
+    word-break: keep-all;
+  }
+  .divider {
+    height: 1px;
+    background: var(--line);
+    margin: 0 0 14px;
+  }
+  .info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+  }
+  .info-label {
+    color: var(--label);
+    min-width: 64px;
+  }
+  .info-value {
+    color: var(--text-base);
+    font-weight: 500;
+    text-align: right;
+    word-break: keep-all;
+  }
+  .info-value.empty {
+    color: #c4c4c4;
+    font-weight: 400;
+  }
+  .notice {
+    background: var(--notice-bg);
+    color: var(--notice-text);
+    font-size: 12px;
+    text-align: center;
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+  }
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  .single-action {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .btn {
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 28px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .btn-primary { background: var(--btn-bg); color: var(--btn-text); border: 0; }
+  .btn-ghost   { background: var(--btn-ghost-bg); color: var(--btn-ghost-text); border: 1px solid var(--btn-ghost-border); }
+
+  /* ===== Mobile Stage (실제 폰 비율 ~9:19.5, 절대 크기 축소) ===== */
+  .stage-mobile {
+    width: 100%;
+    max-width: 340px;
+    background: #ffffff;
+    border-radius: 30px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.18);
+    overflow: hidden;
+    position: relative;
+    border: 5px solid #1a1a1a;
+    min-height: 736px;
+  }
+  .status-bar {
+    height: 28px;
+    background: #ffffff;
+    font-size: 12px;
+    color: #111827;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 18px;
+    font-weight: 500;
+  }
+  .status-bar .icons { display: flex; gap: 4px; font-size: 11px; color: #6b7280; }
+
+  .app-header {
+    height: 52px;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 12px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .app-header .back {
+    font-size: 22px;
+    color: #111827;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    width: 28px;
+    text-align: left;
+  }
+  .app-header .title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #111827;
+    flex: 1;
+  }
+  .app-header .right-link {
+    font-size: 14px;
+    color: #4b5563;
+    cursor: pointer;
+  }
+
+  .dark-banner {
+    background: #2a2a2a;
+    padding: 14px 16px 14px;
+    color: #ffffff;
+  }
+  .dark-banner .notice-text {
+    font-size: 13px;
+    color: #d1d5db;
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+  .search-input-wrap {
+    display: flex;
+    background: #3a3a3a;
+    border-radius: 8px;
+    padding: 4px 4px 4px 14px;
+    align-items: center;
+    gap: 6px;
+  }
+  .search-input-wrap input {
+    flex: 1;
+    background: transparent;
+    border: 0;
+    outline: 0;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 15px;
+    padding: 10px 0;
+  }
+  .search-input-wrap input::placeholder { color: #9ca3af; }
+  .search-input-wrap .search-btn {
+    background: transparent;
+    border: 0;
+    color: var(--brand-strong);
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 8px 14px;
+    cursor: pointer;
+  }
+
+  .mobile-body {
+    background: #ffffff;
+    min-height: 360px;
+    padding: 18px 16px 0;
+  }
+  .mobile-body.empty { min-height: 360px; }
+
+  /* 모바일 결과 인라인 */
+  .result-block .result-label {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 2px;
+  }
+  .result-block .result-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.35;
+  }
+  .result-block .result-subtitle {
+    font-size: 15px;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.35;
+    margin-bottom: 10px;
+  }
+  .result-block .result-divider {
+    height: 1px;
+    background: #e5e7eb;
+    margin: 0 -16px 12px;
+  }
+  .result-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px 14px;
+  }
+  .result-grid .item .item-label {
+    font-size: 11.5px;
+    color: #6b7280;
+    margin-bottom: 1px;
+  }
+  .result-grid .item .item-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+    word-break: break-word;
+  }
+  .result-grid .item .item-value.empty {
+    color: #c4c4c4;
+    font-weight: 500;
+  }
+
+  .mobile-footer {
+    position: absolute;
+    bottom: 56px;
+    left: 0;
+    right: 0;
+    padding: 12px 16px 14px;
+    background: #ffffff;
+    border-top: 1px solid #f3f4f6;
+  }
+  .mobile-footer .footnote {
+    font-size: 11.5px;
+    color: #6b7280;
+    line-height: 1.55;
+    margin: 0 0 10px;
+  }
+  .mobile-footer .deposit-btn {
+    display: block;
+    margin: 0 auto;
+    background: #ffffff;
+    border: 1px solid #111827;
+    color: #111827;
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 13px;
+    padding: 8px 18px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .mobile-tabbar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    align-items: center;
+    text-align: center;
+    font-size: 11px;
+    color: #6b7280;
+  }
+  .mobile-tabbar .tab { position: relative; }
+  .mobile-tabbar .tab .ico {
+    font-size: 18px;
+    margin-bottom: 2px;
+    display: block;
+  }
+  .mobile-tabbar .tab.active { color: #111827; font-weight: 700; }
+  .mobile-tabbar .tab .badge {
+    position: absolute;
+    top: 4px;
+    right: calc(50% - 22px);
+    background: #ef4444;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 999px;
+    line-height: 1.3;
+  }
+
+  /* 모바일 모달 오버레이 */
+  .mobile-modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 10;
+  }
+  .mobile-modal-overlay.active { display: flex; }
+  .mobile-modal {
+    width: 100%;
+    max-width: 296px;
+    background: #ffffff;
+    border-radius: 14px;
+    overflow: hidden;
+    animation: pop .2s ease-out;
+  }
+  .mobile-modal .m-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 18px 14px;
+  }
+  .mobile-modal .m-title-left {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+  }
+  .mobile-modal .m-close {
+    width: 24px;
+    height: 24px;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    color: #6b7280;
+    font-size: 18px;
+    line-height: 1;
+    padding: 0;
+  }
+  .mobile-modal .m-body {
+    padding: 0 18px 16px;
+  }
+  .mobile-modal .m-car-card {
+    background: #f3f4f6;
+    border-radius: 8px;
+    padding: 22px 16px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .mobile-modal .m-car-label {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 8px;
+  }
+  .mobile-modal .m-car-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    word-break: keep-all;
+  }
+  .mobile-modal .m-balance-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .mobile-modal .m-bal-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+  }
+  .mobile-modal .m-bal-row span:first-child { color: #6b7280; }
+  .mobile-modal .m-bal-row span:last-child  { color: #1f2937; font-weight: 500; }
+  .mobile-modal .m-divider {
+    height: 1px;
+    background: #e5e7eb;
+    margin: 0 0 14px;
+  }
+  .mobile-modal .m-charge-msg {
+    text-align: center;
+    font-size: 13px;
+    color: #1f2937;
+    line-height: 1.6;
+    margin: 0 0 4px;
+  }
+  .mobile-modal .m-charge-msg .price { color: var(--price); font-weight: 700; }
+  .mobile-modal .m-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 6px 18px 18px;
+  }
+  .mobile-modal .m-actions button {
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 22px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .mobile-modal .m-actions .btn-cancel  { background: #ffffff; color: #374151; border: 1px solid #d1d5db; }
+  .mobile-modal .m-actions .btn-confirm { background: #111827; color: #ffffff; border: 0; }
+
+  /* 컨트롤 패널 */
+  .controls {
+    width: 100%;
+    max-width: 460px;
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: #ffffff;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .controls h3 {
+    margin: 0 0 4px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-strong);
+  }
+  .controls .legend {
+    font-size: 12px;
+    color: var(--text-mute);
+    line-height: 1.6;
+  }
+  .controls .legend strong { color: var(--text-strong); }
+  .controls code {
+    background: #f3f4f6;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 11px;
+    color: #374151;
+  }
+
+  /* 가시성 토글 */
+  .view-desktop, .view-desktop-contract, .view-mobile-direct, .view-mobile-contract { display: none; }
+  body[data-device="desktop"]          .view-desktop          { display: flex; }
+  body[data-device="desktop-contract"] .view-desktop-contract { display: block; }
+  body[data-device="mobile-direct"]    .view-mobile-direct    { display: block; }
+  body[data-device="mobile-contract"]  .view-mobile-contract  { display: block; }
+  /* 보험 계약서 전용 step chip (3단계 결과 반영) */
+  .stepper .contract-only { display: none; }
+  body[data-device$="-contract"] .stepper .contract-only { display: inline-flex; }
+  body[data-device$="-contract"] .stepper .step-arrow.contract-only { display: inline; }
+
+  /* ===== 보험 계약서 (데스크톱 웹) ===== */
+  .stage-desktop-contract {
+    width: 100%;
+    max-width: 780px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 22px 26px 28px;
+    position: relative;
+    min-height: 580px;
+  }
+  .cw-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 14px;
+  }
+  .cw-section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+    margin: 18px 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .cw-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 28px;
+  }
+  .cw-field {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 10px;
+    align-items: center;
+  }
+  .cw-field .cw-label {
+    font-size: 13px;
+    color: #4b5563;
+  }
+  .cw-field .cw-label .req {
+    color: var(--brand-strong);
+    margin-right: 2px;
+  }
+  .cw-field input {
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    padding: 7px 10px;
+    font-size: 13px;
+    background: #ffffff;
+    color: #111827;
+    font-family: inherit;
+    outline: 0;
+    width: 100%;
+  }
+  .cw-field input::placeholder { color: #d1d5db; }
+  .cw-field input.filled { font-weight: 500; }
+  .cw-field .input-with-action {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 6px;
+    align-items: center;
+  }
+  .cw-field .lookup-btn {
+    background: #4b5563;
+    color: #ffffff;
+    border: 0;
+    padding: 0 12px;
+    height: 30px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+  .cw-field .etc-chk {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11.5px;
+    color: #4b5563;
+  }
+  .cw-field .etc-chk input { width: 13px; height: 13px; }
+  .cw-field .input-with-suffix {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 6px;
+    align-items: center;
+  }
+  .cw-field .suffix {
+    font-size: 13px;
+    color: #4b5563;
+  }
+  .cw-field.cw-field-full { grid-column: 1 / -1; }
+  .cw-field .insurer-radios {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    font-size: 12.5px;
+    color: #4b5563;
+  }
+  .cw-field .insurer-radios label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+  }
+  .cw-field .insurer-radios input { width: 13px; height: 13px; }
+  .cw-field .insurer-radios .hint { color: #9ca3af; font-size: 11px; }
+
+  /* desktop · 보험 계약서 모달 오버레이 */
+  .cw-modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    border-radius: 8px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+  }
+  .cw-modal-overlay.active { display: flex; }
+
+  /* ===== 보험 계약서 폼 (모바일) ===== */
+  .contract-header {
+    border-bottom: 1px solid #d1d5db;
+    padding: 14px 16px;
+    text-align: center;
+  }
+  .contract-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #111827;
+  }
+  .contract-form {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 16px 24px;
+    background: #ffffff;
+  }
+  .contract-form .form-row {
+    display: grid;
+    grid-template-columns: 78px 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+    align-items: center;
+  }
+  .contract-form .form-row.stacked {
+    grid-template-columns: 1fr;
+  }
+  .contract-form .form-label {
+    font-size: 12.5px;
+    color: #4b5563;
+    font-weight: 500;
+  }
+  .contract-form .form-label .req {
+    color: var(--brand-strong);
+    margin-left: 2px;
+  }
+  .contract-form input,
+  .contract-form .input-display {
+    border: 1px solid #d1d5db;
+    border-radius: 5px;
+    padding: 9px 11px;
+    font-size: 12.5px;
+    background: #ffffff;
+    color: #111827;
+    font-family: inherit;
+    outline: 0;
+    width: 100%;
+  }
+  .contract-form input::placeholder { color: #d1d5db; }
+  .contract-form input.filled { font-weight: 500; }
+  .contract-form .input-display {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #6b7280;
+  }
+  .contract-form .input-display .cal { font-size: 14px; }
+  .contract-form .dark-btn {
+    background: #4b5563;
+    color: #ffffff;
+    border: 0;
+    padding: 11px 0;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 5px;
+    width: 100%;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .contract-form .car-number-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 6px;
+  }
+  .contract-form .lookup-btn {
+    background: #d1d5db;
+    color: #ffffff;
+    border: 0;
+    padding: 0 12px;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+  .contract-form .lookup-btn.active {
+    background: #111827;
+    color: #ffffff;
+  }
+  .contract-form .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    grid-column: 2;
+  }
+  .contract-form .checkbox-row input {
+    width: 14px;
+    height: 14px;
+    border: 1px solid #d1d5db;
+    margin: 0;
+  }
+  .contract-form .checkbox-row label {
+    font-size: 11.5px;
+    color: #4b5563;
+  }
+  .contract-form .form-warn {
+    grid-column: 1 / -1;
+    font-size: 11px;
+    color: var(--brand-strong);
+    margin-top: 2px;
+  }
+  .contract-form .pagination {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin: 16px 0 6px;
+  }
+  .contract-form .pagination .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: #d1d5db;
+  }
+  .contract-form .pagination .dot.active { background: #4b5563; }
+  .contract-form .nav-arrows {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+  }
+  .contract-form .nav-arrows button {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #4b5563;
+  }
+
+  /* STEP 2 모달 (차량 정보) — 모바일용 */
+  .m-info-modal .m-headline {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 2px;
+  }
+  .m-info-modal .m-submodel {
+    font-size: 17px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 12px;
+    word-break: keep-all;
+  }
+  .m-info-modal .m-info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    margin-bottom: 14px;
+    padding-top: 12px;
+    border-top: 1px solid #e5e7eb;
+  }
+  .m-info-modal .m-info-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+  }
+  .m-info-modal .m-info-row .lbl { color: #9ca3af; }
+  .m-info-modal .m-info-row .val { color: #1f2937; font-weight: 500; }
+  .m-info-modal .m-info-row .val.empty { color: #c4c4c4; font-weight: 400; }
+  .m-info-modal .m-info-notice {
+    background: #f3f4f6;
+    color: #6b7280;
+    font-size: 11.5px;
+    text-align: center;
+    padding: 9px 10px;
+    border-radius: 6px;
+    margin-bottom: 14px;
+  }
+  .m-info-modal .m-info-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding: 4px 18px 16px;
+  }
+  .m-info-modal .m-info-actions button {
+    font-family: inherit;
+    background: #111827;
+    color: #ffffff;
+    border: 0;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body data-device="desktop">
+  <h1 class="page-title">연식 조회 — TO-BE</h1>
+  <p class="page-sub">IMS폼 플로우 · STEP 1 과금 확인 → STEP 2 차량 정보<br />등급 / 세부등급 / 승차정원 신규 추가</p>
+
+  <div class="toggle-row" role="tablist" aria-label="화면">
+    <span class="group-label">화면</span>
+    <button class="active" data-device="desktop">데스크톱 · 홈</button>
+    <button data-device="desktop-contract">데스크톱 · 보험 계약서</button>
+    <button data-device="mobile-direct">모바일 · 연식 조회</button>
+    <button data-device="mobile-contract">모바일 · 보험 계약서</button>
+  </div>
+
+  <div class="toggle-row" role="tablist" aria-label="응답 시나리오">
+    <span class="group-label">시나리오</span>
+    <button class="active" data-scenario="autobegins">오토비긴즈 응답</button>
+    <button data-scenario="autoup">오토업 fallback 응답</button>
+  </div>
+
+  <div class="stepper">
+    <span class="step-chip active" id="chip-0" data-step="0">0. 차량번호 입력</span>
+    <span class="step-arrow">›</span>
+    <span class="step-chip" id="chip-1" data-step="1">1. 과금 확인</span>
+    <span class="step-arrow">›</span>
+    <span class="step-chip" id="chip-2" data-step="2">2. 차량 정보</span>
+    <span class="step-arrow contract-only">›</span>
+    <span class="step-chip contract-only" id="chip-3" data-step="3">3. 결과 반영</span>
+  </div>
+
+  <!-- ========== Desktop · 홈 ========== -->
+  <div class="stage-desktop view-desktop">
+    <p class="dh-headline">
+      지금 차량번호를 조회해보세요.<br />
+      차량명과, 배기량, 연식을 알려드립니다.
+    </p>
+    <div class="dh-search-row">
+      <input type="text" placeholder="123가4567" value="12가1234" />
+      <button class="dh-search-btn" data-action="dh-search">조회</button>
+    </div>
+    <div class="dh-links">
+      <a>캐시 충전 안내</a>
+      <a>조회이력 보기</a>
+    </div>
+    <p class="dh-footnotes">
+      · 차량조회는 유료서비스로 렌카 캐시/포인트에서 차감됩니다.<br />
+      · 3일 이내에 동일 차량번호 검색 시 캐시/포인트가 차감되지 않습니다.<br />
+      · 조회시 연식/배기량이 나오지 않을 경우 캐시/포인트가 차감되지 않습니다.
+    </p>
+
+    <!-- STEP 1: 과금 확인 -->
+    <div class="dh-modal-overlay" id="dh-modal-1">
+      <div class="modal" role="dialog" aria-modal="true">
+        <div class="modal-head">
+          <div class="modal-title">연식 조회 결과</div>
+          <button class="modal-close" data-action="dh-cancel" aria-label="닫기">&times;</button>
+        </div>
+        <div class="car-name-card">
+          <div class="car-name-label">차량명</div>
+          <div class="car-name-value" id="d-car-name">싼타페</div>
+        </div>
+        <div class="balance-list">
+          <div class="balance-row"><span class="balance-label">보유 캐시</span><span class="balance-value">99,327,290</span></div>
+          <div class="balance-row"><span class="balance-label">보유 포인트</span><span class="balance-value">971,000</span></div>
+          <div class="balance-row"><span class="balance-label">연식조회 무료 쿠폰</span><span class="balance-value">0</span></div>
+        </div>
+        <div class="confirm-divider"></div>
+        <p class="confirm-message">
+          조회된 차종이 실제 차종과 같은 차종인가요?<br /><br />
+          '확인' 버튼을 누르시면 <span class="price">500</span>캐시/포인트가 차감됨과 동시에<br />
+          조회 차량의 배기량과 연식이 제공됩니다.
+        </p>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" data-action="dh-cancel">취소</button>
+          <button class="btn btn-primary" data-action="dh-confirm">확인</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: 차량 정보 -->
+    <div class="dh-modal-overlay" id="dh-modal-2">
+      <div class="modal" role="dialog" aria-modal="true">
+        <div class="modal-head">
+          <div class="modal-title">차량 정보</div>
+          <button class="modal-close" data-action="dh-back" aria-label="닫기">&times;</button>
+        </div>
+        <div class="car-headline" id="d-headline">현대 싼타페</div>
+        <div class="car-submodel" id="d-submodel">싼타페 CM (05.11.22~12.7)</div>
+        <div class="divider"></div>
+        <div class="info-list">
+          <div class="info-row"><span class="info-label">배기량</span><span class="info-value" id="d-displacement">1991cc</span></div>
+          <div class="info-row"><span class="info-label">연식</span><span class="info-value" id="d-rgst-ym">200901</span></div>
+          <div class="info-row"><span class="info-label">등급</span><span class="info-value" id="d-grade">2.0(VGT) FWD CLX</span></div>
+          <div class="info-row"><span class="info-label">세부등급</span><span class="info-value" id="d-sub-grade">고급</span></div>
+          <div class="info-row"><span class="info-label">승차정원</span><span class="info-value" id="d-capacity">7명</span></div>
+        </div>
+        <div class="notice">3일 이내에 동일 차량번호 검색 시 캐시/포인트가 차감되지 않습니다.</div>
+        <div class="single-action">
+          <button class="btn btn-primary" data-action="dh-back">확인</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== Desktop · 보험 계약서 ========== -->
+  <div class="stage-desktop-contract view-desktop-contract">
+    <div class="cw-title">보험 계약서 작성</div>
+    <div class="cw-section-title">고객 차량 정보</div>
+    <div class="cw-grid">
+      <div class="cw-field">
+        <div class="cw-label"><span class="req">*</span>사고 차량 번호</div>
+        <div class="input-with-action">
+          <input id="cw-carno" type="text" placeholder="예) 12가1234, 서울01가1234" value="12가1234" />
+          <button class="lookup-btn" data-action="cw-lookup">연식조회</button>
+          <label class="etc-chk"><input type="checkbox" /> 기타차량: 이륜, 외교 외</label>
+        </div>
+      </div>
+      <div class="cw-field">
+        <div class="cw-label">배기량</div>
+        <div class="input-with-suffix">
+          <input id="cw-disp" type="text" value="" />
+          <span class="suffix">CC</span>
+        </div>
+      </div>
+      <div class="cw-field">
+        <div class="cw-label"><span class="req">*</span>사고 차종</div>
+        <input id="cw-model" type="text" value="" />
+      </div>
+      <div class="cw-field">
+        <div class="cw-label">연식</div>
+        <input id="cw-year" type="text" value="" />
+      </div>
+      <div class="cw-field cw-field-full">
+        <div class="cw-label"><span class="req">*</span>보험사</div>
+        <div class="insurer-radios">
+          <label><input type="radio" name="cw-insurer" /> 삼성</label>
+          <label><input type="radio" name="cw-insurer" /> 현대</label>
+          <label><input type="radio" name="cw-insurer" /> DB</label>
+          <label><input type="radio" name="cw-insurer" /> KB</label>
+          <label><input type="radio" name="cw-insurer" /> 메리츠</label>
+          <label><input type="radio" name="cw-insurer" /> 한화</label>
+          <label><input type="radio" name="cw-insurer" /> AXA</label>
+          <label><input type="radio" name="cw-insurer" /> 흥국</label>
+          <label><input type="radio" name="cw-insurer" /> 롯데</label>
+          <label><input type="radio" name="cw-insurer" /> MG</label>
+          <label><input type="radio" name="cw-insurer" /> 캐롯</label>
+          <label><input type="radio" name="cw-insurer" /> 하나 <span class="hint">(구 더케이)</span></label>
+        </div>
+      </div>
+      <div class="cw-field">
+        <div class="cw-label">접수번호</div>
+        <input type="text" placeholder='"-" 없이 숫자만 입력해주세요.' />
+      </div>
+      <div class="cw-field">
+        <div class="cw-label">입고 공업사</div>
+        <input type="text" />
+      </div>
+    </div>
+
+    <!-- STEP 1: 과금 확인 -->
+    <div class="cw-modal-overlay" id="cw-modal-1">
+      <div class="modal" role="dialog" aria-modal="true">
+        <div class="modal-head">
+          <div class="modal-title">연식 조회 결과</div>
+          <button class="modal-close" data-action="cw-cancel" aria-label="닫기">&times;</button>
+        </div>
+        <div class="car-name-card">
+          <div class="car-name-label">차량명</div>
+          <div class="car-name-value" id="cw-car-name">싼타페</div>
+        </div>
+        <div class="balance-list">
+          <div class="balance-row"><span class="balance-label">보유 캐시</span><span class="balance-value">99,327,290</span></div>
+          <div class="balance-row"><span class="balance-label">보유 포인트</span><span class="balance-value">971,000</span></div>
+          <div class="balance-row"><span class="balance-label">연식조회 무료 쿠폰</span><span class="balance-value">0</span></div>
+        </div>
+        <div class="confirm-divider"></div>
+        <p class="confirm-message">
+          조회된 차종이 실제 차종과 같은 차종인가요?<br /><br />
+          '확인' 버튼을 누르시면 <span class="price">500</span>캐시/포인트가 차감됨과 동시에<br />
+          조회 차량의 배기량과 연식이 제공됩니다.
+        </p>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" data-action="cw-cancel">취소</button>
+          <button class="btn btn-primary" data-action="cw-confirm">확인</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: 차량 정보 -->
+    <div class="cw-modal-overlay" id="cw-modal-2">
+      <div class="modal" role="dialog" aria-modal="true">
+        <div class="modal-head">
+          <div class="modal-title">차량 정보</div>
+          <button class="modal-close" data-action="cw-info-back" aria-label="닫기">&times;</button>
+        </div>
+        <div class="car-headline" id="cw-headline">현대 싼타페</div>
+        <div class="car-submodel" id="cw-submodel">싼타페 CM (05.11.22~12.7)</div>
+        <div class="divider"></div>
+        <div class="info-list">
+          <div class="info-row"><span class="info-label">배기량</span><span class="info-value" id="cw-displacement">1991cc</span></div>
+          <div class="info-row"><span class="info-label">연식</span><span class="info-value" id="cw-rgst-ym">200901</span></div>
+          <div class="info-row"><span class="info-label">등급</span><span class="info-value" id="cw-grade">2.0(VGT) FWD CLX</span></div>
+          <div class="info-row"><span class="info-label">세부등급</span><span class="info-value" id="cw-sub-grade">고급</span></div>
+          <div class="info-row"><span class="info-label">승차정원</span><span class="info-value" id="cw-capacity">7명</span></div>
+        </div>
+        <div class="notice">3일 이내에 동일 차량번호 검색 시 캐시/포인트가 차감되지 않습니다.</div>
+        <div class="single-action">
+          <button class="btn btn-primary" data-action="cw-apply">확인</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== Mobile · 연식 조회 ========== -->
+  <div class="stage-mobile view-mobile-direct">
+    <div class="status-bar">
+      <span>5:59</span>
+      <span class="icons">🔕 📶 🔋</span>
+    </div>
+
+    <div class="app-header">
+      <button class="back" aria-label="뒤로">←</button>
+      <div class="title">연식 조회</div>
+      <span class="right-link">조회이력</span>
+    </div>
+
+    <div class="dark-banner">
+      <p class="notice-text">해당기능은 유료 서비스 입니다.<br />파트너 캐시 / 포인트에서 차감됩니다.</p>
+      <div class="search-input-wrap">
+        <input id="m-input" type="text" placeholder="차량번호를 입력해주세요." value="12가1234" />
+        <button class="search-btn" data-action="m-search">조회</button>
+      </div>
+    </div>
+
+    <div class="mobile-body" id="m-body">
+      <!-- 결과 영역 (STEP 2일 때만 표시) -->
+      <div class="result-block" id="m-result" style="display:none;">
+        <div class="result-label">차량명</div>
+        <div class="result-title" id="m-headline">현대 싼타페</div>
+        <div class="result-subtitle" id="m-submodel">싼타페 CM (05.11.22~12.7)</div>
+        <div class="result-divider"></div>
+        <div class="result-grid">
+          <div class="item"><div class="item-label">배기량(cc)</div><div class="item-value" id="m-displacement">1991cc</div></div>
+          <div class="item"><div class="item-label">연식</div><div class="item-value" id="m-rgst-ym">200901</div></div>
+          <div class="item"><div class="item-label">등급</div><div class="item-value" id="m-grade">2.0(VGT) FWD CLX</div></div>
+          <div class="item"><div class="item-label">세부등급</div><div class="item-value" id="m-sub-grade">고급</div></div>
+          <div class="item"><div class="item-label">승차정원</div><div class="item-value" id="m-capacity">7명</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-footer">
+      <p class="footnote">· 3일 이내에 같은 차량번호 검색시 캐시/포인트가 차감되지 않습니다.<br />· 조회 완료시 연식/배기량이 나오지 않을 경우 캐시/포인트가 차감되지 않습니다.</p>
+      <button class="deposit-btn" type="button">입금 안내 보러가기</button>
+    </div>
+
+    <div class="mobile-tabbar">
+      <div class="tab active"><span class="ico">🔗</span>IMS</div>
+      <div class="tab"><span class="ico">🚗</span>파트너</div>
+      <div class="tab"><span class="ico">📄</span>계약서</div>
+      <div class="tab"><span class="ico">🔔</span>알림<span class="badge">99+</span></div>
+      <div class="tab"><span class="ico">⋯</span>더보기</div>
+    </div>
+
+    <!-- 모바일 STEP 1: 과금 확인 모달 (웹 톤 통일) -->
+    <div class="mobile-modal-overlay" id="m-modal">
+      <div class="mobile-modal" role="dialog" aria-modal="true">
+        <div class="m-head">
+          <div class="m-title-left">연식 조회 결과</div>
+          <button class="m-close" data-action="m-cancel" aria-label="닫기">&times;</button>
+        </div>
+        <div class="m-body">
+          <div class="m-car-card">
+            <div class="m-car-label">차량명</div>
+            <div class="m-car-value" id="m-car-name">싼타페</div>
+          </div>
+          <div class="m-balance-list">
+            <div class="m-bal-row"><span>보유 캐시</span><span>99,327,290</span></div>
+            <div class="m-bal-row"><span>보유 포인트</span><span>971,000</span></div>
+            <div class="m-bal-row"><span>연식조회 무료 쿠폰</span><span>0</span></div>
+          </div>
+          <div class="m-divider"></div>
+          <p class="m-charge-msg">
+            조회된 차종이 실제 차종과 같은 차종인가요?<br /><br />
+            '확인' 버튼을 누르시면 <span class="price">500</span>캐시/포인트가 차감됨과 동시에<br />
+            조회 차량의 배기량과 연식이 제공됩니다.
+          </p>
+        </div>
+        <div class="m-actions">
+          <button class="btn-cancel" data-action="m-cancel">취소</button>
+          <button class="btn-confirm" data-action="m-confirm">확인</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== Mobile · 보험 계약서 ========== -->
+  <div class="stage-mobile view-mobile-contract">
+    <div class="status-bar">
+      <span>6:18</span>
+      <span class="icons">🔕 📶 🔋</span>
+    </div>
+
+    <div class="contract-header">
+      <div class="contract-title">고객 차량 정보</div>
+    </div>
+
+    <div class="contract-form">
+      <div class="form-row">
+        <div class="form-label">배차 일시 <span class="req">*</span></div>
+        <div class="input-display"><span>2026.06.19 18:17</span><span class="cal">📅</span></div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-label">렌카콜 연결</div>
+        <button type="button" class="dark-btn">대기 목록보기</button>
+      </div>
+
+      <div class="form-row">
+        <div class="form-label">차량번호 <span class="req">*</span></div>
+        <div class="car-number-row">
+          <input id="c-carno" type="text" placeholder="예) 01가1234" value="12가1234" />
+          <button id="c-lookup-btn" class="lookup-btn active" data-action="c-lookup">연식조회</button>
+        </div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="c-etc" />
+          <label for="c-etc">기타차량 :이륜,외교 외</label>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-label">사고 차종 <span class="req">*</span></div>
+        <input id="c-model" type="text" placeholder="예) 아우디 S8" value="" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-label">배기량(cc)</div>
+        <input id="c-disp" type="text" placeholder="예) 5000" value="" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-label">연식</div>
+        <input id="c-year" type="text" placeholder="예 201712" value="" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-label">보험사 <span class="req">*</span></div>
+        <input type="text" placeholder="가해자 보험사" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-label">접수번호</div>
+        <input type="text" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-label">입고 공업사</div>
+        <input type="text" placeholder="한글, 영문, 숫자 (), [], -, /, &amp;" />
+      </div>
+      <div class="form-warn">※ 청구 시 보험사에 전달되니 정확히 입력해 주세요.</div>
+
+      <div class="pagination">
+        <span class="dot"></span><span class="dot active"></span><span class="dot"></span>
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      </div>
+      <div class="nav-arrows">
+        <button type="button">‹</button>
+        <button type="button">›</button>
+      </div>
+    </div>
+
+    <div class="mobile-tabbar">
+      <div class="tab"><span class="ico">🔗</span>IMS</div>
+      <div class="tab"><span class="ico">🚗</span>파트너</div>
+      <div class="tab active"><span class="ico">📄</span>계약서</div>
+      <div class="tab"><span class="ico">🔔</span>알림<span class="badge">99+</span></div>
+      <div class="tab"><span class="ico">⋯</span>더보기</div>
+    </div>
+
+    <!-- STEP 1 모달 (과금 확인) -->
+    <div class="mobile-modal-overlay" id="c-modal-1">
+      <div class="mobile-modal" role="dialog" aria-modal="true">
+        <div class="m-head">
+          <div class="m-title-left">연식 조회 결과</div>
+          <button class="m-close" data-action="c-cancel" aria-label="닫기">&times;</button>
+        </div>
+        <div class="m-body">
+          <div class="m-car-card">
+            <div class="m-car-label">차량명</div>
+            <div class="m-car-value" id="c-car-name">싼타페</div>
+          </div>
+          <div class="m-balance-list">
+            <div class="m-bal-row"><span>보유 캐시</span><span>99,327,290</span></div>
+            <div class="m-bal-row"><span>보유 포인트</span><span>971,000</span></div>
+            <div class="m-bal-row"><span>연식조회 무료 쿠폰</span><span>0</span></div>
+          </div>
+          <div class="m-divider"></div>
+          <p class="m-charge-msg">
+            조회된 차종이 실제 차종과 같은 차종인가요?<br /><br />
+            '확인' 버튼을 누르시면 <span class="price">500</span>캐시/포인트가 차감됨과 동시에<br />
+            조회 차량의 배기량과 연식이 제공됩니다.
+          </p>
+        </div>
+        <div class="m-actions">
+          <button class="btn-cancel" data-action="c-cancel">취소</button>
+          <button class="btn-confirm" data-action="c-confirm">확인</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2 모달 (차량 정보 — NEW) -->
+    <div class="mobile-modal-overlay" id="c-modal-2">
+      <div class="mobile-modal m-info-modal" role="dialog" aria-modal="true">
+        <div class="m-head">
+          <div class="m-title-left">차량 정보</div>
+          <button class="m-close" data-action="c-info-back" aria-label="닫기">&times;</button>
+        </div>
+        <div class="m-body">
+          <div class="m-headline" id="c-headline">현대 싼타페</div>
+          <div class="m-submodel" id="c-submodel">싼타페 CM (05.11.22~12.7)</div>
+          <div class="m-info-list">
+            <div class="m-info-row"><span class="lbl">배기량</span><span class="val" id="c-displacement">1991cc</span></div>
+            <div class="m-info-row"><span class="lbl">연식</span><span class="val" id="c-rgst-ym">200901</span></div>
+            <div class="m-info-row"><span class="lbl">등급</span><span class="val" id="c-grade">2.0(VGT) FWD CLX</span></div>
+            <div class="m-info-row"><span class="lbl">세부등급</span><span class="val" id="c-sub-grade">고급</span></div>
+            <div class="m-info-row"><span class="lbl">승차정원</span><span class="val" id="c-capacity">7명</span></div>
+          </div>
+          <div class="m-info-notice">3일 이내에 동일 차량번호 검색 시 캐시/포인트가 차감되지 않습니다.</div>
+        </div>
+        <div class="m-info-actions">
+          <button data-action="c-apply">확인</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <h3>목업 컨트롤</h3>
+    <div class="legend">
+      <strong>화면</strong>: 데스크톱 · 홈 / 데스크톱 · 보험 계약서 / 모바일 · 연식 조회 / 모바일 · 보험 계약서 (4개 진입 경로)<br />
+      <strong>STEP 0 — 차량번호 입력</strong>: 사용자가 차량번호를 입력하고 `조회`/`연식조회` 버튼을 누르기 전 상태. 모달 없음.<br />
+      <strong>STEP 1 — 과금 확인</strong>: 조회 버튼 클릭 후 노출. 차량명만 표시. <code>확인</code> 클릭 시 500을 <strong>쿠폰 → 포인트 → 캐시</strong> 순으로 차감(PR-015).<br />
+      <strong>STEP 2 — 차량 정보</strong>: 홈·보험 계약서는 팝업, 모바일 연식 조회 메뉴는 인라인. <strong>등급·세부등급·승차정원</strong> 신규 추가.<br />
+      <strong>STEP 3 — 결과 반영</strong> (보험 계약서 전용, 웹·앱 공통): STEP 2 모달의 <code>확인</code> 클릭 시 폼 자동 입력 (사고 차종 · 배기량 · 연식).<br />
+      <br />
+      <strong>오토비긴즈 응답</strong>: 등급·세부등급·승차정원 모두 채워진 정상 케이스<br />
+      <strong>오토업 fallback 응답</strong>: <code>capacity = ""</code>인 케이스 (오토업은 승차정원 미제공). 빈값은 <code>-</code>로 노출
+    </div>
+  </div>
+
+<script>
+  const scenarios = {
+    autobegins: {
+      company_name: '현대',
+      model_name: '싼타페',
+      sub_model_name: '싼타페 CM (05.11.22~12.7)',
+      displacement: '1991',
+      rgst_ym: '200901',
+      grade_name: '2.0(VGT) FWD CLX',
+      sub_grade_name: '고급',
+      capacity: '7'
+    },
+    autoup: {
+      company_name: '현대',
+      model_name: '싼타페',
+      sub_model_name: '싼타페 CM (05.11.22~12.7)',
+      displacement: '1991',
+      rgst_ym: '200901',
+      grade_name: '2.0(VGT) FWD CLX',
+      sub_grade_name: '고급',
+      capacity: ''
+    }
+  };
+
+  function fmt(value, suffix) {
+    if (value === null || value === undefined || String(value).trim() === '') {
+      return { text: '-', empty: true };
+    }
+    return { text: suffix ? `${value}${suffix}` : String(value), empty: false };
+  }
+  function setValue(el, result) {
+    if (!el) return;
+    el.textContent = result.text;
+    el.classList.toggle('empty', result.empty);
+  }
+
+  let currentScenario = 'autobegins';
+  let currentStep = 0;
+  let currentDevice = 'desktop';
+
+  function render() {
+    const d = scenarios[currentScenario];
+
+    // Desktop
+    document.getElementById('d-car-name').textContent = d.model_name;
+    document.getElementById('d-headline').textContent = `${d.company_name} ${d.model_name}`;
+    document.getElementById('d-submodel').textContent = d.sub_model_name;
+    setValue(document.getElementById('d-displacement'), fmt(d.displacement, 'cc'));
+    setValue(document.getElementById('d-rgst-ym'),       fmt(d.rgst_ym, ''));
+    setValue(document.getElementById('d-grade'),         fmt(d.grade_name, ''));
+    setValue(document.getElementById('d-sub-grade'),     fmt(d.sub_grade_name, ''));
+    setValue(document.getElementById('d-capacity'),      fmt(d.capacity, '명'));
+
+    // Mobile · 연식 조회
+    document.getElementById('m-car-name').textContent = d.model_name;
+    document.getElementById('m-headline').textContent = `${d.company_name} ${d.model_name}`;
+    document.getElementById('m-submodel').textContent = d.sub_model_name;
+    setValue(document.getElementById('m-displacement'), fmt(d.displacement, 'cc'));
+    setValue(document.getElementById('m-rgst-ym'),       fmt(d.rgst_ym, ''));
+    setValue(document.getElementById('m-grade'),         fmt(d.grade_name, ''));
+    setValue(document.getElementById('m-sub-grade'),     fmt(d.sub_grade_name, ''));
+    setValue(document.getElementById('m-capacity'),      fmt(d.capacity, '명'));
+
+    // Mobile · 보험 계약서
+    document.getElementById('c-car-name').textContent = d.model_name;
+    document.getElementById('c-headline').textContent = `${d.company_name} ${d.model_name}`;
+    document.getElementById('c-submodel').textContent = d.sub_model_name;
+    setValue(document.getElementById('c-displacement'), fmt(d.displacement, 'cc'));
+    setValue(document.getElementById('c-rgst-ym'),       fmt(d.rgst_ym, ''));
+    setValue(document.getElementById('c-grade'),         fmt(d.grade_name, ''));
+    setValue(document.getElementById('c-sub-grade'),     fmt(d.sub_grade_name, ''));
+    setValue(document.getElementById('c-capacity'),      fmt(d.capacity, '명'));
+
+    // Desktop · 보험 계약서
+    document.getElementById('cw-car-name').textContent = d.model_name;
+    document.getElementById('cw-headline').textContent = `${d.company_name} ${d.model_name}`;
+    document.getElementById('cw-submodel').textContent = d.sub_model_name;
+    setValue(document.getElementById('cw-displacement'), fmt(d.displacement, 'cc'));
+    setValue(document.getElementById('cw-rgst-ym'),       fmt(d.rgst_ym, ''));
+    setValue(document.getElementById('cw-grade'),         fmt(d.grade_name, ''));
+    setValue(document.getElementById('cw-sub-grade'),     fmt(d.sub_grade_name, ''));
+    setValue(document.getElementById('cw-capacity'),      fmt(d.capacity, '명'));
+  }
+
+  function withThousands(numStr) {
+    if (!numStr) return '';
+    return String(numStr).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
+  function applyContractForm(step) {
+    // step 3에서만 폼이 자동 입력됨
+    const d = scenarios[currentScenario];
+    const filled = step === 3;
+
+    // 모바일 보험 계약서 폼
+    const carInput   = document.getElementById('c-carno');
+    const modelInput = document.getElementById('c-model');
+    const dispInput  = document.getElementById('c-disp');
+    const yearInput  = document.getElementById('c-year');
+    if (filled) {
+      carInput.value   = '12가1234';
+      modelInput.value = d.model_name;
+      dispInput.value  = d.displacement;
+      yearInput.value  = d.rgst_ym;
+      [modelInput, dispInput, yearInput].forEach(el => el.classList.add('filled'));
+    } else {
+      [modelInput, dispInput, yearInput].forEach(el => { el.value = ''; el.classList.remove('filled'); });
+    }
+
+    // 데스크톱 보험 계약서 폼
+    const cwModel = document.getElementById('cw-model');
+    const cwDisp  = document.getElementById('cw-disp');
+    const cwYear  = document.getElementById('cw-year');
+    if (filled) {
+      cwModel.value = d.model_name;
+      cwDisp.value  = withThousands(d.displacement);
+      cwYear.value  = d.rgst_ym;
+      [cwModel, cwDisp, cwYear].forEach(el => el.classList.add('filled'));
+    } else {
+      [cwModel, cwDisp, cwYear].forEach(el => { el.value = ''; el.classList.remove('filled'); });
+    }
+  }
+
+  function goStep(step) {
+    currentStep = step;
+
+    // Stepper chips
+    document.getElementById('chip-0').classList.toggle('active', step === 0);
+    document.getElementById('chip-1').classList.toggle('active', step === 1);
+    document.getElementById('chip-2').classList.toggle('active', step === 2);
+    document.getElementById('chip-3').classList.toggle('active', step === 3);
+
+    // Desktop · 홈 (step 0 = 입력만, step 1 = STEP1 모달, step 2 = STEP2 모달)
+    document.getElementById('dh-modal-1').classList.toggle('active', step === 1);
+    document.getElementById('dh-modal-2').classList.toggle('active', step === 2);
+
+    // Mobile · 연식 조회 (step 0 = 입력만, step 1 = STEP1 모달, step 2 = 인라인 결과)
+    document.getElementById('m-modal').classList.toggle('active', step === 1);
+    document.getElementById('m-result').style.display = step === 2 ? '' : 'none';
+
+    // Mobile · 보험 계약서 (step 0 = 빈 폼, step 1 = 모달1, step 2 = 모달2, step 3 = 자동 입력)
+    document.getElementById('c-modal-1').classList.toggle('active', step === 1);
+    document.getElementById('c-modal-2').classList.toggle('active', step === 2);
+
+    // Desktop · 보험 계약서 (동일 로직)
+    document.getElementById('cw-modal-1').classList.toggle('active', step === 1);
+    document.getElementById('cw-modal-2').classList.toggle('active', step === 2);
+
+    applyContractForm(step);
+  }
+
+  function setDevice(device) {
+    currentDevice = device;
+    document.body.dataset.device = device;
+    // 디바이스 변경 시 보험 계약서가 아닌데 step 3에 있으면 step 0로 리셋
+    if (!device.endsWith('-contract') && currentStep === 3) {
+      goStep(0);
+    }
+  }
+
+  // 토글 이벤트
+  document.querySelectorAll('[data-device]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-device]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      setDevice(btn.dataset.device);
+    });
+  });
+  document.querySelectorAll('[data-scenario]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-scenario]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentScenario = btn.dataset.scenario;
+      render();
+      goStep(0);
+    });
+  });
+  document.querySelectorAll('[data-step]').forEach(chip => {
+    chip.addEventListener('click', () => goStep(Number(chip.dataset.step)));
+  });
+
+  // 액션 이벤트
+  document.querySelectorAll('[data-action]').forEach(el => {
+    el.addEventListener('click', () => {
+      const action = el.dataset.action;
+      // 데스크톱 · 홈
+      if      (action === 'dh-search')  goStep(1);
+      else if (action === 'dh-confirm') goStep(2);
+      else if (action === 'dh-cancel')  goStep(0);
+      else if (action === 'dh-back')    goStep(0);
+      // 모바일 · 연식 조회
+      else if (action === 'm-search')  goStep(1);
+      else if (action === 'm-confirm') goStep(2);
+      else if (action === 'm-cancel')  goStep(0);
+      // 모바일 · 보험 계약서
+      else if (action === 'c-lookup')     goStep(1);
+      else if (action === 'c-confirm')    goStep(2);
+      else if (action === 'c-apply')      goStep(3);
+      else if (action === 'c-cancel')     goStep(0);
+      else if (action === 'c-info-back')  goStep(0);
+      // 데스크톱 · 보험 계약서
+      else if (action === 'cw-lookup')    goStep(1);
+      else if (action === 'cw-confirm')   goStep(2);
+      else if (action === 'cw-apply')     goStep(3);
+      else if (action === 'cw-cancel')    goStep(0);
+      else if (action === 'cw-info-back') goStep(0);
+    });
+  });
+
+  render();
+  goStep(0);
+</script>
+</body>
+</html>
